@@ -14,8 +14,8 @@ extern "C" {
 
 #[wasm_bindgen(start)]
 pub fn start_websocket() -> Result<(), JsValue> {
-    // Connect to an echo server
-    let ws = WebSocket::new("wss://echo.websocket.org")?;
+    // Connect to my modified (to echo back twice) echo server
+    let ws = WebSocket::new("ws://localhost:9001")?;
 
     // create callback
     let onmessage_callback = Closure::wrap(Box::new(move |e: MessageEvent| {
@@ -25,6 +25,9 @@ pub fn start_websocket() -> Result<(), JsValue> {
             .as_string()
             .expect("Can't convert received data to a string");
         console_log!("message event, received data: {:?}", response);
+        let window = web_sys::window().unwrap();
+        let w = window.open_with_url("https://duckduckgo.com");
+        console_log!("w: {:?}", w);
     }) as Box<dyn FnMut(MessageEvent)>);
     // set message event handler on WebSocket
     ws.set_onmessage(Some(onmessage_callback.as_ref().unchecked_ref()));

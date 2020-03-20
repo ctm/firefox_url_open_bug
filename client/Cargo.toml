@@ -16,4 +16,5 @@ features = [
   "ErrorEvent",
   "MessageEvent",
   "WebSocket",
+  "Window",
 ]
