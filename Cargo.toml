@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "server",
-    "client"
+    "clients/wasm_bindgen",
+    "clients/yew"
 ]
 
 default-members = [

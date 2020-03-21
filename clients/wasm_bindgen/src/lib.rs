@@ -26,7 +26,8 @@ pub fn start_websocket() -> Result<(), JsValue> {
             .expect("Can't convert received data to a string");
         console_log!("message event, received data: {:?}", response);
         let window = web_sys::window().unwrap();
-        let w = window.open_with_url("https://duckduckgo.com");
+        //        let w = window.open_with_url("https://duckduckgo.com");
+        let w = window.alert_with_message("test");
         console_log!("w: {:?}", w);
     }) as Box<dyn FnMut(MessageEvent)>);
     // set message event handler on WebSocket
