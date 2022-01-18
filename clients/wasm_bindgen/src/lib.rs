@@ -14,25 +14,49 @@ extern "C" {
 
 #[wasm_bindgen(start)]
 pub fn start_websocket() -> Result<(), JsValue> {
-    // Connect to my modified (to echo back twice) echo server
     let ws = WebSocket::new("ws://localhost:9001")?;
 
-    // create callback
     let onmessage_callback = Closure::wrap(Box::new(move |e: MessageEvent| {
-        // handle message
         let response = e
             .data()
             .as_string()
             .expect("Can't convert received data to a string");
         console_log!("message event, received data: {:?}", response);
         let window = web_sys::window().unwrap();
-        //        let w = window.open_with_url("https://duckduckgo.com");
-        let w = window.alert_with_message("test");
-        console_log!("w: {:?}", w);
-    }) as Box<dyn FnMut(MessageEvent)>);
-    // set message event handler on WebSocket
+        let _ = window.alert_with_message("test");
+    }) as Box<dyn Fn(MessageEvent)>);
     ws.set_onmessage(Some(onmessage_callback.as_ref().unchecked_ref()));
-    // forget the callback to keep it alive
+    onmessage_callback.forget();
+
+    let onerror_callback = Closure::wrap(Box::new(move |e: ErrorEvent| {
+        console_log!("error event: {:?}", e);
+    }) as Box<dyn Fn(ErrorEvent)>);
+    ws.set_onerror(Some(onerror_callback.as_ref().unchecked_ref()));
+    onerror_callback.forget();
+
+    let cloned_ws = ws.clone();
+    let onopen_callback = Closure::wrap(Box::new(move |_| {
+        console_log!("using Fn should work with all browsers");
+        match cloned_ws.send_with_str("ping") {
+            Ok(_) => console_log!("message successfully sent"),
+            Err(err) => console_log!("error sending message: {:?}", err),
+        }
+    }) as Box<dyn Fn(JsValue)>);
+    ws.set_onopen(Some(onopen_callback.as_ref().unchecked_ref()));
+    onopen_callback.forget();
+
+    let ws = WebSocket::new("ws://localhost:9001")?;
+
+    let onmessage_callback = Closure::wrap(Box::new(move |e: MessageEvent| {
+        let response = e
+            .data()
+            .as_string()
+            .expect("Can't convert received data to a string");
+        console_log!("message event, received data: {:?}", response);
+        let window = web_sys::window().unwrap();
+        let _ = window.alert_with_message("test");
+    }) as Box<dyn FnMut(MessageEvent)>);
+    ws.set_onmessage(Some(onmessage_callback.as_ref().unchecked_ref()));
     onmessage_callback.forget();
 
     let onerror_callback = Closure::wrap(Box::new(move |e: ErrorEvent| {
@@ -43,7 +67,7 @@ pub fn start_websocket() -> Result<(), JsValue> {
 
     let cloned_ws = ws.clone();
     let onopen_callback = Closure::wrap(Box::new(move |_| {
-        console_log!("socket opened");
+        console_log!("using FnMut will panic on Firefox");
         match cloned_ws.send_with_str("ping") {
             Ok(_) => console_log!("message successfully sent"),
             Err(err) => console_log!("error sending message: {:?}", err),
