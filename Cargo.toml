@@ -2,7 +2,6 @@
 members = [
     "server",
     "clients/wasm_bindgen",
-    "clients/yew"
 ]
 
 default-members = [
